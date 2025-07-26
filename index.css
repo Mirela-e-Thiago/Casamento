@@ -23,7 +23,7 @@ body {
     font-weight: 100;
     background-color: #f4f4f4;
     width: 100%;
-    overflow: hidden;
+    overflow-x: hidden;
     height: auto;
 }
 
