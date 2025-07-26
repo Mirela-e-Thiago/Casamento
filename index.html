@@ -4,44 +4,45 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="index.css">
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
     <title>Casamento | Mirela & Thiago</title>
 </head>
 <body>
     <main class="inicio">
-        <span>13.09.2025</span>
-        <h1>Mirela <br>& Thiago</h1>
+        <span data-aos="fade-down" data-aos-delay="50" data-aos-duration="800">13.09.2025</span>
+        <h1 data-aos="fade-up" data-aos-delay="100" data-aos-duration="900">Mirela <br>& Thiago</h1>
     </main>
     <section class="sec1">
-        <h2>Um amor que se torna eterno merece ser celebrado com quem amamos. Junte-se a nós!</h2>
-        <img src="assets/sec1.jpg" alt="">
+        <h2 data-aos="fade-up" data-aos-duration="600">Um amor que se torna eterno merece ser celebrado com quem amamos. Junte-se a nós!</h2>
+        <img src="assets/sec1.jpg" alt="" data-aos="zoom-in" data-aos-delay="50" data-aos-duration="700">
     </section>
     <section class="sec2">
-        <h2>Rute 1:16-17</h2>
-        <p>
+        <h2 data-aos="fade-right" data-aos-duration="600">Rute 1:16-17</h2>
+        <p data-aos="fade-left" data-aos-delay="50" data-aos-duration="700">
             Deus mudou o teu caminho até juntares com o meu e guardou a tua vida separando-a para mim. Para onde fores, irei. Onde tu repousares, eu repousarei. Teu Deus será o meu Deus. Teu caminho o meu será.
         </p>
     </section>
     <section class="sec3">
-        <h2>Nosso Dia</h2>
-        <div>
+        <h2 data-aos="fade-up" data-aos-duration="600">Nosso Dia</h2>
+        <div data-aos="fade-up" data-aos-delay="30" data-aos-duration="600">
             <img src="assets/icon1.webp" alt="">
-            <p>Chegada às 15h.</p>
+            <p>Chegada às 15h</p>
         </div>
-        <div>
+        <div data-aos="fade-up" data-aos-delay="60" data-aos-duration="600">
             <img src="assets/icon2.webp" alt="">
-            <p>Cerimônia às 15h30.</p>
+            <p>Cerimônia às 15h30</p>
         </div>
-        <article>
+        <article data-aos="zoom-in" data-aos-delay="100" data-aos-duration="700">
             <h1>Minse</h1>
             <p>
-            Rua Dagoberto Inocêncio de Oliveira, SN, Maravilha, Paty do Alferes, Rj, 26950-000
+            R. Dagoberto Inocêncio de Oliveira, S/N - Maravilha, Paty do Alferes/RJ, 26950-000
             </p>
         </article>
     </section>
 
             <section class="sec4">
-            <h2>Contagem Regressiva</h2>
-            <div class="countdown-container">
+            <h2 data-aos="fade-down" data-aos-duration="600">CONTAGEM REGRESSIVA</h2>
+            <div class="countdown-container" data-aos="fade-up" data-aos-delay="50" data-aos-duration="700">
                 <div class="countdown-item">
                     <span id="days" class="countdown-number">0</span>
                     <span class="countdown-label">DIAS</span>
@@ -54,12 +55,12 @@
                     <span id="minutes" class="countdown-number">0</span>
                     <span class="countdown-label">MINUTOS</span>
                 </div>
-                <div class="countdown-item">
+                <div class="countdown-item" >
                     <span id="seconds" class="countdown-number">0</span>
                     <span class="countdown-label">SEGUNDOS</span>
                 </div>
             </div>
-            <img src="assets/icon4.webp" alt="">
+            <img src="assets/sec4.jpg" alt="">
         </section>
 
     <script>
@@ -96,6 +97,31 @@
         
         // Executar imediatamente
         updateCountdown();
+    </script>
+    
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script>
+        AOS.init({
+            duration: 600,
+            easing: 'ease-in-out',
+            once: true,
+            mirror: false,
+            offset: 0,
+            delay: 0,
+            disable: false,
+            startEvent: 'DOMContentLoaded',
+            initClassName: 'aos-init',
+            animatedClassName: 'aos-animate',
+            useClassNames: false,
+            disableMutationObserver: false,
+            debounceDelay: 50,
+            throttleDelay: 99
+        });
+
+        // Forçar refresh do AOS após carregamento completo
+        window.addEventListener('load', function() {
+            AOS.refresh();
+        });
     </script>
 </body>
 </html>
