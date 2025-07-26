@@ -12,12 +12,11 @@ body {
 }
 
 .inicio {
-      font-family: "Lato", sans-serif;
-
-      font-weight: 100;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+    font-family: "Lato", sans-serif;
+    font-weight: 100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     flex-direction: column;
     min-height: 100vh;
     gap: 0;
@@ -62,7 +61,7 @@ body {
         width: 100%;
 
         @media (max-width: 768px) {
-            font-size: 45px;
+            font-size: 60px;
         }
     }
 }
@@ -72,14 +71,14 @@ body {
     align-items: center;
     justify-content: center;
     flex-direction: column;
-    height: 100vh;
-    gap: 30px;
+    height: auto;
+    gap: 5px;
     max-width: 100%;
     padding: 2.5% 5%; 
     font-family: "Cormorant Garamond", serif;
 
     & h2 {
-        font-size: 36px;
+        font-size: 28px;
         line-height: 100%;
         font-weight: 300;
         color: #898563;
@@ -102,7 +101,7 @@ body {
     gap: 0;
 
     & h2 {
-        font-size: 36px;
+        font-size: 28px;
         font-family: "Cormorant Garamond", serif;
         font-weight: 300;
         color: #898563;
@@ -111,8 +110,8 @@ body {
 
     & p {
         color: #898563;
-        font-size: 26px;
-        font-weight: 200;
+        font-size: 22px;
+        font-weight: 300;
     }
 
 }
