@@ -41,7 +41,7 @@
     </section>
 
             <section class="sec4">
-            <h2 >CONTAGEM REGRESSIVA</h2>
+            <h2 >SAVE THE DATE</h2>
             <div class="countdown-container">
                 <div class="countdown-item">
                     <span id="days" class="countdown-number">0</span>
@@ -62,7 +62,121 @@
             </div>
         </section>
 
+    <!-- Botão de música fixo -->
+    <button id="musicBtn" class="music-btn">
+        <svg class="music-icon" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 3V13.55A4 4 0 1 0 14 17V7H18V5H12V3M10 19A2 2 0 1 1 12 17A2 2 0 0 1 10 19Z"/>
+        </svg>
+        <div class="sound-waves">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+    </button>
+
+    <audio id="backgroundMusic" loop preload="auto">
+        <source src="assets/musica.mp3" type="audio/mpeg">
+        Seu navegador não suporta áudio.
+    </audio>
+
     <script>
+        // Controle de música
+        const musicBtn = document.getElementById('musicBtn');
+        const backgroundMusic = document.getElementById('backgroundMusic');
+        let isPlaying = false;
+        let isAudioReady = false;
+
+        // Configurar áudio assim que possível
+        backgroundMusic.volume = 1;
+        backgroundMusic.preload = 'auto';
+
+        // Aguardar que o áudio esteja pronto
+        backgroundMusic.addEventListener('canplaythrough', function() {
+            console.log('Áudio pronto para reprodução');
+            isAudioReady = true;
+        });
+
+        backgroundMusic.addEventListener('loadeddata', function() {
+            console.log('Dados do áudio carregados');
+        });
+
+        backgroundMusic.addEventListener('error', function(e) {
+            console.log('Erro ao carregar áudio:', e);
+        });
+
+        // Preparar áudio na primeira interação
+        let audioInitialized = false;
+        
+        function initializeAudio() {
+            if (!audioInitialized) {
+                backgroundMusic.load();
+                // Tentar um play/pause silencioso para "destravar" o áudio
+                backgroundMusic.play().then(() => {
+                    backgroundMusic.pause();
+                    backgroundMusic.currentTime = 0;
+                    console.log('Áudio inicializado com sucesso');
+                }).catch(() => {
+                    console.log('Aguardando interação do usuário');
+                });
+                audioInitialized = true;
+            }
+        }
+
+        // Inicializar na primeira interação
+        document.addEventListener('click', initializeAudio, { once: true });
+        document.addEventListener('touchstart', initializeAudio, { once: true });
+
+        musicBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            console.log('Botão clicado. Estado atual:', isPlaying);
+            
+            if (isPlaying) {
+                backgroundMusic.pause();
+                musicBtn.classList.remove('playing');
+                isPlaying = false;
+                console.log('Música pausada');
+            } else {
+                // Garantir que o áudio está pronto
+                if (backgroundMusic.readyState >= 3) { // HAVE_FUTURE_DATA
+                    backgroundMusic.currentTime = 0; // Recomeçar do início
+                    
+                    const playPromise = backgroundMusic.play();
+                    
+                    playPromise.then(() => {
+                        musicBtn.classList.add('playing');
+                        isPlaying = true;
+                        console.log('Música tocando instantaneamente');
+                    }).catch((error) => {
+                        console.log('Erro ao reproduzir áudio:', error);
+                        // Tentar novamente após pequeno delay
+                        setTimeout(() => {
+                            backgroundMusic.play().then(() => {
+                                musicBtn.classList.add('playing');
+                                isPlaying = true;
+                                console.log('Música tocando após retry');
+                            }).catch(() => {
+                                alert('Erro ao reproduzir áudio. Verifique se o arquivo existe.');
+                            });
+                        }, 100);
+                    });
+                } else {
+                    console.log('Áudio ainda carregando... readyState:', backgroundMusic.readyState);
+                    // Se não estiver pronto, forçar carregamento e tentar novamente
+                    backgroundMusic.load();
+                    backgroundMusic.addEventListener('canplaythrough', function tryPlay() {
+                        backgroundMusic.play().then(() => {
+                            musicBtn.classList.add('playing');
+                            isPlaying = true;
+                            console.log('Música tocando após carregamento');
+                        });
+                        backgroundMusic.removeEventListener('canplaythrough', tryPlay);
+                    });
+                }
+            }
+        });
+
         // Data do casamento: 13/09/2025 às 15:30
         const weddingDate = new Date('September 13, 2025 15:30:00').getTime();
 
