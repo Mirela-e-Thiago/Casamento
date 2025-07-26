@@ -96,7 +96,7 @@ body {
         font-size: 32px;
         line-height: 100%;
         font-weight: 300;
-        color: #898563;
+        color: #7f8967;
     }
 
     & > img {
@@ -119,12 +119,12 @@ body {
         font-size: 32px;
         font-family: "Cormorant Garamond", serif;
         font-weight: 300;
-        color: #898563;
+        color: #7f8967;
         margin-bottom: -10px;
     }
 
     & p {
-        color: #898563;
+        color: #7f8967;
         font-size: 22px;
         font-weight: 300;
     }
@@ -132,7 +132,7 @@ body {
 }
 
 .sec3 {
-    background-color: #898563;
+    background-color: #7f8967;
     max-width: 100%;
     padding: 3.5% 5%;
     display: flex;
@@ -211,9 +211,10 @@ body {
 
     & h2 {
             font-size: 32px;
-         color: #898563;
+         color: #7f8967;
         font-family: "Cormorant Garamond", serif;
         font-weight: 300;
+        margin-bottom: 50px;
     }
 
     .countdown-container {
@@ -222,10 +223,28 @@ body {
         gap: 40px 80px;
         max-width: 500px;
         width: 100%;
+        background-image: url('assets/sec4.jpg');
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        padding: 60px 40px;
+        position: relative;
+
+        &::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.3);
+            z-index: 1;
+        }
 
         @media (max-width: 768px) {
             gap: 30px 40px;
             max-width: 400px;
+            padding: 40px 30px;
         }
     }
 
@@ -234,6 +253,8 @@ body {
         flex-direction: column;
         align-items: center;
         text-align: center;
+        position: relative;
+        z-index: 2;
     }
 
     .countdown-number {
@@ -242,7 +263,7 @@ body {
         font-weight: 200;
         line-height: 1;
         margin-bottom: 10px;
-        color: #898563;
+        color: #fff;
 
         @media (max-width: 768px) {
             font-size: 60px;
@@ -255,14 +276,7 @@ body {
         font-weight: 300;
         letter-spacing: 2px;
         text-transform: uppercase;
-        color: #898563;
+        color: #fff;
         opacity: 0.9;
-    }
-
-    & img {
-        width: 100%;
-        height: auto;
-        object-fit: cover;
-        margin-top: 40px;
     }
 }
