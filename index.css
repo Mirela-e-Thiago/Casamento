@@ -167,9 +167,11 @@ body {
     }
 
     & img {
-        width: 80px;
+        width: 140px;
         height: auto;
         object-fit: contain;
+        margin-bottom: -20px;
+        margin-top: -20px;
     }
 
     & > article {
