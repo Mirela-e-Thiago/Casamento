@@ -31,6 +31,71 @@
             <img src="assets/icon2.webp" alt="">
             <p>Cerimônia às 15h30.</p>
         </div>
+        <article>
+            <h1>Minse</h1>
+            <p>
+            Rua Dagoberto Inocêncio de Oliveira, SN, Maravilha, Paty do Alferes, Rj, 26950-000
+            </p>
+        </article>
     </section>
+
+            <section class="sec4">
+            <h2>Contagem Regressiva</h2>
+            <div class="countdown-container">
+                <div class="countdown-item">
+                    <span id="days" class="countdown-number">0</span>
+                    <span class="countdown-label">DIAS</span>
+                </div>
+                <div class="countdown-item">
+                    <span id="hours" class="countdown-number">0</span>
+                    <span class="countdown-label">HORAS</span>
+                </div>
+                <div class="countdown-item">
+                    <span id="minutes" class="countdown-number">0</span>
+                    <span class="countdown-label">MINUTOS</span>
+                </div>
+                <div class="countdown-item">
+                    <span id="seconds" class="countdown-number">0</span>
+                    <span class="countdown-label">SEGUNDOS</span>
+                </div>
+            </div>
+            <img src="assets/icon4.webp" alt="">
+        </section>
+
+    <script>
+        // Data do casamento: 13/09/2025 às 15:30
+        const weddingDate = new Date('September 13, 2025 15:30:00').getTime();
+
+        function updateCountdown() {
+            const now = new Date().getTime();
+            const distance = weddingDate - now;
+
+            // Cálculos de tempo
+            const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+            // Atualizar os elementos
+            document.getElementById('days').textContent = days.toString().padStart(2, '0');
+            document.getElementById('hours').textContent = hours.toString().padStart(2, '0');
+            document.getElementById('minutes').textContent = minutes.toString().padStart(2, '0');
+            document.getElementById('seconds').textContent = seconds.toString().padStart(2, '0');
+
+            // Se a contagem chegou a zero
+            if (distance < 0) {
+                document.getElementById('days').textContent = '00';
+                document.getElementById('hours').textContent = '00';
+                document.getElementById('minutes').textContent = '00';
+                document.getElementById('seconds').textContent = '00';
+            }
+        }
+
+        // Atualizar a cada segundo
+        setInterval(updateCountdown, 1000);
+        
+        // Executar imediatamente
+        updateCountdown();
+    </script>
 </body>
 </html>
