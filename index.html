@@ -10,12 +10,24 @@
     <title>Casamento | Mirela & Thiago</title>
 </head>
 <body>
+    <!-- Overlay para ativar áudio -->
+    <div id="audioOverlay" class="audio-overlay">
+        <div class="audio-overlay-content">
+            <div class="audio-icon">
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 3V13.55A4 4 0 1 0 14 17V7H18V5H12V3M10 19A2 2 0 1 1 12 17A2 2 0 0 1 10 19Z"/>
+                </svg>
+            </div>
+            <button id="enableAudioBtn" class="enable-audio-btn">Acessar</button>
+        </div>
+    </div>
+
     <main class="inicio">
         <span data-aos="fade-down" data-aos-delay="50" data-aos-duration="800">13.09.2025</span>
         <h1 data-aos="fade-up" data-aos-delay="100" data-aos-duration="900">Mirela <br>& Thiago</h1>
     </main>
     <section class="sec1">
-        <h2 data-aos="fade-up" data-aos-duration="600">Um amor que se torna eterno merece ser celebrado com quem amamos. Junte-se a nós!</h2>
+        <h2 data-aos="fade-up" data-aos-duration="600">Um amor que se torna eterno merece ser celebrado com quem amamos. <br>Junte-se a nós!</h2>
         <img src="assets/sec1.jpg" alt="" data-aos="zoom-in" data-aos-delay="50" data-aos-duration="700">
     </section>
     <section class="sec2">
@@ -82,55 +94,71 @@
     </audio>
 
     <script>
+        // Overlay de ativação de áudio
+        const audioOverlay = document.getElementById('audioOverlay');
+        const enableAudioBtn = document.getElementById('enableAudioBtn');
+        
         // Controle de música
         const musicBtn = document.getElementById('musicBtn');
         const backgroundMusic = document.getElementById('backgroundMusic');
         let isPlaying = false;
         let isAudioReady = false;
+        let audioEnabled = false;
 
-        // Configurar áudio assim que possível
+        // Configurar áudio
         backgroundMusic.volume = 1;
         backgroundMusic.preload = 'auto';
 
-        // Aguardar que o áudio esteja pronto
+        // Eventos do áudio
         backgroundMusic.addEventListener('canplaythrough', function() {
             console.log('Áudio pronto para reprodução');
             isAudioReady = true;
-        });
-
-        backgroundMusic.addEventListener('loadeddata', function() {
-            console.log('Dados do áudio carregados');
         });
 
         backgroundMusic.addEventListener('error', function(e) {
             console.log('Erro ao carregar áudio:', e);
         });
 
-        // Preparar áudio na primeira interação
-        let audioInitialized = false;
-        
-        function initializeAudio() {
-            if (!audioInitialized) {
-                backgroundMusic.load();
-                // Tentar um play/pause silencioso para "destravar" o áudio
-                backgroundMusic.play().then(() => {
-                    backgroundMusic.pause();
-                    backgroundMusic.currentTime = 0;
-                    console.log('Áudio inicializado com sucesso');
-                }).catch(() => {
-                    console.log('Aguardando interação do usuário');
-                });
-                audioInitialized = true;
-            }
-        }
+        // Ativar áudio quando o usuário clicar
+        enableAudioBtn.addEventListener('click', function() {
+            audioEnabled = true;
+            
+            // Inicializar áudio
+            backgroundMusic.load();
+            
+            // Tentar reproduzir automaticamente após ativação
+            const playPromise = backgroundMusic.play();
+            
+            playPromise.then(() => {
+                musicBtn.classList.add('playing');
+                isPlaying = true;
+                console.log('Música iniciada automaticamente');
+                
+                // Remover overlay
+                audioOverlay.style.opacity = '0';
+                setTimeout(() => {
+                    audioOverlay.style.display = 'none';
+                }, 500);
+                
+            }).catch((error) => {
+                console.log('Autoplay não permitido, aguardando clique no botão');
+                
+                // Remover overlay mesmo se autoplay falhou
+                audioOverlay.style.opacity = '0';
+                setTimeout(() => {
+                    audioOverlay.style.display = 'none';
+                }, 500);
+            });
+        });
 
-        // Inicializar na primeira interação
-        document.addEventListener('click', initializeAudio, { once: true });
-        document.addEventListener('touchstart', initializeAudio, { once: true });
-
+        // Controle do botão de música (só funciona após ativação)
         musicBtn.addEventListener('click', function(e) {
             e.preventDefault();
             e.stopPropagation();
+            
+            if (!audioEnabled) {
+                return; // Não faz nada se áudio não foi ativado
+            }
             
             console.log('Botão clicado. Estado atual:', isPlaying);
             
@@ -140,42 +168,17 @@
                 isPlaying = false;
                 console.log('Música pausada');
             } else {
-                // Garantir que o áudio está pronto
-                if (backgroundMusic.readyState >= 3) { // HAVE_FUTURE_DATA
-                    backgroundMusic.currentTime = 0; // Recomeçar do início
-                    
-                    const playPromise = backgroundMusic.play();
-                    
-                    playPromise.then(() => {
-                        musicBtn.classList.add('playing');
-                        isPlaying = true;
-                        console.log('Música tocando instantaneamente');
-                    }).catch((error) => {
-                        console.log('Erro ao reproduzir áudio:', error);
-                        // Tentar novamente após pequeno delay
-                        setTimeout(() => {
-                            backgroundMusic.play().then(() => {
-                                musicBtn.classList.add('playing');
-                                isPlaying = true;
-                                console.log('Música tocando após retry');
-                            }).catch(() => {
-                                alert('Erro ao reproduzir áudio. Verifique se o arquivo existe.');
-                            });
-                        }, 100);
-                    });
-                } else {
-                    console.log('Áudio ainda carregando... readyState:', backgroundMusic.readyState);
-                    // Se não estiver pronto, forçar carregamento e tentar novamente
-                    backgroundMusic.load();
-                    backgroundMusic.addEventListener('canplaythrough', function tryPlay() {
-                        backgroundMusic.play().then(() => {
-                            musicBtn.classList.add('playing');
-                            isPlaying = true;
-                            console.log('Música tocando após carregamento');
-                        });
-                        backgroundMusic.removeEventListener('canplaythrough', tryPlay);
-                    });
-                }
+                backgroundMusic.currentTime = 0;
+                
+                const playPromise = backgroundMusic.play();
+                
+                playPromise.then(() => {
+                    musicBtn.classList.add('playing');
+                    isPlaying = true;
+                    console.log('Música tocando');
+                }).catch((error) => {
+                    console.log('Erro ao reproduzir áudio:', error);
+                });
             }
         });
 
