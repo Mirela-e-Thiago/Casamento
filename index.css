@@ -741,15 +741,16 @@ body {
 .attendance-title {
     font-family: "Cormorant Garamond", serif;
     font-size: 36px;
+    text-transform: uppercase;
     color: #7f8967;
     margin-bottom: 20px;
     font-weight: 300;
 }
 
 .export-btn {
-    background-color: #7f8967;
-    color: white;
-    border: none;
+    background-color: transparent;
+    color: #7f8967;
+    border: 1px solid #7f8967;
     padding: 12px 25px;
     border-radius: 25px;
     font-size: 16px;
@@ -761,14 +762,14 @@ body {
 }
 
 .export-btn:hover {
-    background-color: #5a6149;
+    background-color: #7f8967;
+    color: #fff;
 }
 
 .attendance-table {
     width: 100%;
     border-collapse: collapse;
     background: white;
-    border-radius: 10px;
     overflow: hidden;
     box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
 }
@@ -920,7 +921,6 @@ body {
 .stat-card {
     background: white;
     padding: 20px;
-    border-radius: 10px;
     text-align: center;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
     min-width: 120px;
@@ -928,7 +928,7 @@ body {
 
 .stat-number {
     font-size: 32px;
-    font-weight: bold;
+    font-weight: 300;
     color: #7f8967;
     font-family: "Cormorant Garamond", serif;
     margin-bottom: 5px;
