@@ -216,7 +216,7 @@ body {
     }
 
     & span {
-        font-family: "Fleur De Leah", cursive;
+        font-family: "Lato", sans-serif;
         color: #fff;
         font-size: 20px;
         margin-top: -40px;
@@ -1106,7 +1106,7 @@ body {
     width: 25px;
     height: 25px;
     border-radius: 50%;
-    border: 1px solid #ddd;
+    border: 1px solid #7f8967;
     display: inline-block;
 }
 
