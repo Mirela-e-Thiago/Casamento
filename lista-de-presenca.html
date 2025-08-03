@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="index.css">
+    <link rel="icon" href="assets/capa.jpg">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <title>Lista de Presenças | Casamento Mirela & Thiago</title>
+</head>
+<body style="background-color: #f8f9f7;">
+    <div class="attendance-page" style="display: block;">   
+        <div class="attendance-header">
+            <button class="back-btn" onclick="window.location.href='index.html'">← Voltar ao Convite</button>
+            <h1 class="attendance-title">Lista de Presenças Confirmadas</h1>
+            
+            <!-- Estatísticas -->
+            <div class="stats-container">
+                <div class="stat-card">
+                    <div class="stat-number" id="totalGuests">0</div>
+                    <div class="stat-label">Total de Convidados</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="totalAdults">0</div>
+                    <div class="stat-label">Adultos</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="totalChildren">0</div>
+                    <div class="stat-label">Crianças</div>
+                </div>
+            </div>
+            
+            <button class="export-btn" id="exportExcel">Exportar para Excel</button>
+        </div>
+        
+        <table class="attendance-table" id="attendanceTable">
+            <thead>
+                <tr>
+                    <th>Nome</th>
+                    <th>Crianças</th>
+                    <th>Data/Hora</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody id="attendanceTableBody">
+                <!-- Dados serão inseridos aqui via JavaScript -->
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Modal de edição -->
+    <div id="editModal" class="edit-modal-overlay">
+        <div class="edit-modal-content">
+            <button class="edit-modal-close" id="closeEditModal">&times;</button>
+            <h2 class="edit-form-title">Editar Confirmação de Presença</h2>
+            <form id="editForm">
+                <div class="form-group">
+                    <label class="form-label" for="editFullName">Nome e sobrenome:</label>
+                    <input type="text" id="editFullName" name="editFullName" class="form-input" required>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" for="editChildren">Você levará alguma criança? Se sim, informe o(s) nome(s) dela(s):</label>
+                    <textarea id="editChildren" name="editChildren" class="form-textarea" placeholder="Se não, deixe em branco. Se sim, informe o nome e idade de cada criança."></textarea>
+                </div>
+                
+                <button type="submit" class="form-submit">Salvar Alterações</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Carregar dados do localStorage
+        let attendanceList = JSON.parse(localStorage.getItem('weddingAttendance')) || [];
+        let editingEntryId = null;
+
+        // Elementos do modal de edição
+        const editModal = document.getElementById('editModal');
+        const closeEditModal = document.getElementById('closeEditModal');
+        const editForm = document.getElementById('editForm');
+        const editFullName = document.getElementById('editFullName');
+        const editChildren = document.getElementById('editChildren');
+
+        // Função para contar crianças em uma string
+        function countChildren(childrenText) {
+            if (!childrenText || childrenText === 'Não' || childrenText.trim() === '') {
+                return 0;
+            }
+            
+            // Separar por vírgulas, quebras de linha ou pontos
+            const children = childrenText.split(/[,\n.;]/)
+                .map(child => child.trim())
+                .filter(child => child !== '' && child !== 'Não');
+            
+            return children.length;
+        }
+
+        // Atualizar estatísticas
+        function updateStats() {
+            const totalAdults = attendanceList.length;
+            let totalChildren = 0;
+            
+            attendanceList.forEach(entry => {
+                totalChildren += countChildren(entry.children);
+            });
+            
+            const totalGuests = totalAdults + totalChildren;
+            
+            document.getElementById('totalGuests').textContent = totalGuests;
+            document.getElementById('totalAdults').textContent = totalAdults;
+            document.getElementById('totalChildren').textContent = totalChildren;
+        }
+
+        // Função para remover entrada
+        function removeEntry(id) {
+            if (confirm('Tem certeza que deseja remover esta confirmação de presença?')) {
+                attendanceList = attendanceList.filter(entry => entry.id !== id);
+                localStorage.setItem('weddingAttendance', JSON.stringify(attendanceList));
+                updateAttendanceTable();
+                updateStats();
+            }
+        }
+
+        // Função para abrir modal de edição
+        function editEntry(id) {
+            const entry = attendanceList.find(item => item.id === id);
+            if (!entry) return;
+
+            editingEntryId = id;
+            editFullName.value = entry.name;
+            editChildren.value = entry.children === 'Não' ? '' : entry.children;
+            
+            editModal.style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+        }
+
+        // Fechar modal de edição
+        closeEditModal.addEventListener('click', function() {
+            editModal.style.display = 'none';
+            document.body.style.overflow = 'auto';
+            editingEntryId = null;
+        });
+
+        // Fechar modal clicando fora
+        editModal.addEventListener('click', function(e) {
+            if (e.target === editModal) {
+                editModal.style.display = 'none';
+                document.body.style.overflow = 'auto';
+                editingEntryId = null;
+            }
+        });
+
+        // Enviar formulário de edição
+        editForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            if (!editingEntryId) return;
+
+            const newName = editFullName.value.trim();
+            const newChildren = editChildren.value.trim();
+
+            if (!newName) {
+                alert('Por favor, preencha o nome.');
+                return;
+            }
+
+            // Encontrar e atualizar a entrada
+            const entryIndex = attendanceList.findIndex(item => item.id === editingEntryId);
+            if (entryIndex !== -1) {
+                attendanceList[entryIndex].name = newName;
+                attendanceList[entryIndex].children = newChildren || 'Não';
+                
+                // Salvar no localStorage
+                localStorage.setItem('weddingAttendance', JSON.stringify(attendanceList));
+                
+                // Atualizar tabela e estatísticas
+                updateAttendanceTable();
+                updateStats();
+                
+                // Fechar modal
+                editModal.style.display = 'none';
+                document.body.style.overflow = 'auto';
+                editingEntryId = null;
+                
+                // Limpar formulário
+                editForm.reset();
+            }
+        });
+
+        // Atualizar tabela de presenças
+        function updateAttendanceTable() {
+            const tbody = document.getElementById('attendanceTableBody');
+            tbody.innerHTML = '';
+
+            if (attendanceList.length === 0) {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td colspan="4" style="text-align: center; color: #999; font-style: italic;">
+                        Nenhuma confirmação de presença registrada ainda.
+                    </td>
+                `;
+                tbody.appendChild(row);
+                return;
+            }
+
+            attendanceList.forEach((entry, index) => {
+                const row = document.createElement('tr');
+                
+                // Processar crianças
+                let childrenDisplay = entry.children;
+                if (entry.children !== 'Não' && entry.children.trim() !== '') {
+                    const childrenCount = countChildren(entry.children);
+                    childrenDisplay = `<span class="child-indicator">${childrenCount} criança(s)</span><br><small>${entry.children}</small>`;
+                }
+                
+                row.innerHTML = `
+                    <td><strong>${entry.name}</strong></td>
+                    <td>${childrenDisplay}</td>
+                    <td>${entry.timestamp}</td>
+                    <td>
+                        <div class="action-buttons">
+                            <button class="edit-btn" onclick="editEntry(${entry.id})">
+                                Editar
+                            </button>
+                            <button class="remove-btn" onclick="removeEntry(${entry.id})">
+                                Remover
+                            </button>
+                        </div>
+                    </td>
+                `;
+                
+                tbody.appendChild(row);
+            });
+        }
+
+        // Exportar para Excel
+        document.getElementById('exportExcel').addEventListener('click', function() {
+            if (attendanceList.length === 0) {
+                alert('Não há dados para exportar.');
+                return;
+            }
+
+            // Preparar dados para Excel
+            const excelData = [
+                ['Nome', 'Crianças', 'Quantidade de Crianças', 'Data/Hora']
+            ];
+
+            attendanceList.forEach(entry => {
+                const childrenCount = countChildren(entry.children);
+                excelData.push([
+                    entry.name,
+                    entry.children === 'Não' ? 'Não' : entry.children,
+                    childrenCount,
+                    entry.timestamp
+                ]);
+            });
+
+            // Adicionar estatísticas no final
+            excelData.push([]);
+            excelData.push(['ESTATÍSTICAS']);
+            excelData.push(['Total de Adultos', attendanceList.length]);
+            excelData.push(['Total de Crianças', attendanceList.reduce((sum, entry) => sum + countChildren(entry.children), 0)]);
+            excelData.push(['Total de Convidados', attendanceList.length + attendanceList.reduce((sum, entry) => sum + countChildren(entry.children), 0)]);
+
+            // Criar workbook e worksheet
+            const wb = XLSX.utils.book_new();
+            const ws = XLSX.utils.aoa_to_sheet(excelData);
+
+            // Configurar largura das colunas
+            const colWidths = [
+                { wch: 30 }, // Nome
+                { wch: 40 }, // Crianças
+                { wch: 20 }, // Quantidade
+                { wch: 20 }  // Data/Hora
+            ];
+            ws['!cols'] = colWidths;
+
+            // Adicionar worksheet ao workbook
+            XLSX.utils.book_append_sheet(wb, ws, "Lista de Presenças");
+
+            // Salvar arquivo
+            XLSX.writeFile(wb, `lista_presenca_casamento_${new Date().toISOString().split('T')[0]}.xlsx`);
+        });
+
+        // Carregar tabela e estatísticas ao iniciar
+        updateAttendanceTable();
+        updateStats();
+
+        // Atualizar tabela a cada 5 segundos (caso outros usuários adicionem dados)
+        setInterval(function() {
+            const newData = JSON.parse(localStorage.getItem('weddingAttendance')) || [];
+            if (JSON.stringify(newData) !== JSON.stringify(attendanceList)) {
+                attendanceList = newData;
+                updateAttendanceTable();
+                updateStats();
+            }
+        }, 5000);
+
+        // Expor função removeEntry globalmente
+        window.removeEntry = removeEntry;
+        window.editEntry = editEntry;
+    </script>
+</body>
+</html>

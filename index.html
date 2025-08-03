@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="index.css">
     <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <link rel="icon" href="assets/capa.jpg">
     <meta name="description" content="Um amor que se torna eterno merece ser celebrado com quem amamos. Junte-se a nós!">
     <title>Casamento | Mirela & Thiago</title>
@@ -38,6 +39,7 @@
     </section>
     <section class="sec3">
         <h2 data-aos="fade-up" data-aos-duration="600">Nosso Dia</h2>
+        <span>13.09</span>
         <div data-aos="fade-up" data-aos-delay="30" data-aos-duration="600">
             <img src="assets/i1.png" alt="">
             <p>Chegada às 15h</p>
@@ -52,6 +54,8 @@
             R. Dagoberto Inocêncio de Oliveira, S/N - Maravilha, Paty do Alferes/RJ, 26950-000
             </p>
         </article>
+
+        <button id="confirmPresenceBtn">Confirme sua presença</button>
     </section>
 
             <section class="sec4">
@@ -74,6 +78,7 @@
                     <span class="countdown-label">SEGUNDOS</span>
                 </div>
             </div>
+            <button id="giftListBtn">Lista de presentes</button>
         </section>
 
     <!-- Botão de música fixo -->
@@ -87,6 +92,235 @@
             <span></span>
         </div>
     </button>
+
+    <!-- Modal do formulário de confirmação -->
+    <div id="presenceModal" class="modal-overlay">
+        <div class="modal-content">
+            <button class="modal-close" id="closeModal">&times;</button>
+            <h2 class="form-title">Confirmação de Presença</h2>
+            <form id="presenceForm">
+                <div class="form-group">
+                    <label class="form-label" for="fullName">Nome e sobrenome:</label>
+                    <input type="text" id="fullName" name="fullName" class="form-input" required>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" for="children">Você levará alguma criança? Se sim, informe o(s) nome(s) dela(s):</label>
+                    <textarea id="children" name="children" class="form-textarea" placeholder="Se não, deixe em branco."></textarea>
+                </div>
+                
+                <div class="checkbox-group">
+                    <input type="checkbox" id="agreement" name="agreement" class="checkbox-input" required>
+                    <label class="checkbox-label" for="agreement">
+                        Declaro que as informações acima são verdadeiras e me comprometo a não repassar esse convite a terceiros
+                    </label>
+                </div>
+                
+                <button type="submit" class="form-submit">Confirmar minha presença</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Pop-up de confirmação -->
+    <div id="confirmationPopup" class="popup-overlay">
+        <div class="popup-content">
+            <h3 class="popup-title">Presença Confirmada!</h3>
+            <p class="popup-text">
+                Este convite é <strong>INDIVIDUAL e INTRANSFERÍVEL!</strong><br><br> Nós contamos com sua compreensão para não estendê-lo a outras pessoas.<br><br> 
+                <strong>LEMBRE-SE: CONVIDADO NÃO CONVIDA.</strong>
+            </p>
+            <button class="popup-close" id="closePopup">Entendi</button>
+        </div>
+    </div>
+
+    <!-- Página de lista de presença -->
+    <div id="attendancePage" class="attendance-page">
+        <div class="attendance-header">
+            <button class="back-btn" id="backToHome">Voltar ao convite</button>
+            <h1 class="attendance-title">Lista de Presenças Confirmadas</h1>
+            
+            <!-- Estatísticas -->
+            <div class="stats-container">
+                <div class="stat-card">
+                    <div class="stat-number" id="totalGuestsMain">0</div>
+                    <div class="stat-label">Total de Convidados</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="totalAdultsMain">0</div>
+                    <div class="stat-label">Adultos</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="totalChildrenMain">0</div>
+                    <div class="stat-label">Crianças</div>
+                </div>
+            </div>
+            
+            <button class="export-btn" id="exportExcel">Exportar para Excel</button>
+        </div>
+        
+        <table class="attendance-table" id="attendanceTable">
+            <thead>
+                <tr>
+                    <th>Nome</th>
+                    <th>Crianças</th>
+                    <th>Data/Hora</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody id="attendanceTableBody">
+                <!-- Dados serão inseridos aqui via JavaScript -->
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Modal de edição -->
+    <div id="editModal" class="edit-modal-overlay">
+        <div class="edit-modal-content">
+            <button class="edit-modal-close" id="closeEditModal">&times;</button>
+            <h2 class="edit-form-title">Editar Confirmação de Presença</h2>
+            <form id="editForm">
+                <div class="form-group">
+                    <label class="form-label" for="editFullName">Nome e sobrenome:</label>
+                    <input type="text" id="editFullName" name="editFullName" class="form-input" required>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" for="editChildren">Você levará alguma criança? Se sim, informe o(s) nome(s) dela(s):</label>
+                    <textarea id="editChildren" name="editChildren" class="form-textarea" placeholder="Se não, deixe em branco. Se sim, informe o nome e idade de cada criança."></textarea>
+                </div>
+                
+                <button type="submit" class="form-submit">Salvar Alterações</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Página de lista de presentes -->
+    <div id="giftListPage" class="gift-list-page">
+        <div class="gift-list-header">
+            <button class="back-btn" id="backToHomeFromGifts">Voltar ao convite</button>
+            <h1 class="gift-list-title">Lista de Presentes</h1>
+            
+            <!-- Navegação por categorias -->
+            <div class="gift-categories">
+                <button class="category-btn active" data-category="cozinha">Cozinha</button>
+                <button class="category-btn" data-category="cama-banho">Cama & Banho</button>
+                <button class="category-btn" data-category="decoracao">Decoração</button>
+            </div>
+            
+            <!-- Informação sobre cores preferidas para cozinha -->
+            <div class="color-preference" id="colorPreference">
+                <p>Cores de preferência dos noivos para a cozinha:</p>
+                <div class="color-circles">
+                    <span class="color-circle white"></span>
+                    <span class="color-circle red"></span>
+                    <span class="color-circle black"></span>
+                </div>
+                <span class="color-text">Branco, Vermelho e Preto</span>
+            </div>
+        </div>
+        
+        <!-- Lista de itens por categoria -->
+        <div class="gift-items-container">
+            <!-- Cozinha -->
+            <div class="gift-category-section active" id="cozinha">
+                <div class="gift-items">
+                    <div class="gift-item">
+                        <span class="gift-name">Conjunto de facas</span>
+                    </div>
+                    <div class="gift-item">
+                        <span class="gift-name">Aparelho de jantar</span>
+                    </div>
+                    <div class="gift-item">
+                        <span class="gift-name">Conjunto de taças e copos de vidro</span>
+                    </div>
+                    <div class="gift-item">
+                        <span class="gift-name">Jarra de suco de vidro</span>
+                    </div>
+                    <div class="gift-item">
+                        <span class="gift-name">Processador elétrico de alimentos</span>
+                    </div>
+                    <div class="gift-item">
+                        <span class="gift-name">Saleiro e paliteiro de vidro</span>
+                    </div>
+                    <div class="gift-item">
+                        <span class="gift-name">Porta-tempero de bancada</span>
+                    </div>
+                    <div class="gift-item">
+                        <span class="gift-name">Travessas de vidro com tampa</span>
+                    </div>
+                    <div class="gift-item">
+                        <span class="gift-name">Assadeiras para bolo/tortas</span>
+                    </div>
+                    <div class="gift-item">
+                        <span class="gift-name">Jogo de panelas</span>
+                    </div>
+                    <div class="gift-item">
+                        <span class="gift-name">Sousplat</span>
+                    </div>
+                    <div class="gift-item">
+                        <span class="gift-name">Panos de prato sem estampa</span>
+                    </div>
+                    <div class="gift-item">
+                        <span class="gift-name">Tapetes de cozinha</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Cama & Banho -->
+            <div class="gift-category-section" id="cama-banho">
+                <div class="gift-items">
+                    <div class="gift-item">
+                        <span class="gift-name">Jogo de lençol básico p/ casal</span>
+                    </div>
+                    <div class="gift-item">
+                        <span class="gift-name">Cobre-leito</span>
+                    </div>
+                    <div class="gift-item">
+                        <span class="gift-name">Jogo de toalhas de banho e de rosto</span>
+                    </div>
+                    <div class="gift-item">
+                        <span class="gift-name">Tapetes de banheiro</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Decoração -->
+            <div class="gift-category-section" id="decoracao">
+                <div class="gift-items">
+                    <div class="gift-item">
+                        <span class="gift-name">Espelhos</span>
+                    </div>
+                    <div class="gift-item">
+                        <span class="gift-name">Quadros</span>
+                    </div>
+                    <div class="gift-item">
+                        <span class="gift-name">Almofadas</span>
+                    </div>
+                    <div class="gift-item">
+                        <span class="gift-name">Capa de almofadas p/ sofá</span>
+                    </div>
+                    <div class="gift-item">
+                        <span class="gift-name">Cortinas básico</span>
+                    </div>
+                    <div class="gift-item">
+                        <span class="gift-name">Manta decorativa de sofá</span>
+                    </div>
+                    <div class="gift-item">
+                        <span class="gift-name">Rede</span>
+                    </div>
+                    <div class="gift-item">
+                        <span class="gift-name">Toalha de mesa p/ 6 lugares</span>
+                    </div>
+                    <div class="gift-item">
+                        <span class="gift-name">Caminho de mesa</span>
+                    </div>
+                    <div class="gift-item">
+                        <span class="gift-name">Difusor de vidro</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <audio id="backgroundMusic" loop preload="auto">
         <source src="assets/musica.mp3" type="audio/mpeg">
@@ -215,6 +449,420 @@
         
         // Executar imediatamente
         updateCountdown();
+
+        // Sistema de confirmação de presença
+        const confirmPresenceBtn = document.getElementById('confirmPresenceBtn');
+        const presenceModal = document.getElementById('presenceModal');
+        const closeModal = document.getElementById('closeModal');
+        const presenceForm = document.getElementById('presenceForm');
+        const confirmationPopup = document.getElementById('confirmationPopup');
+        const closePopup = document.getElementById('closePopup');
+        const attendancePage = document.getElementById('attendancePage');
+        const backToHome = document.getElementById('backToHome');
+        const exportExcel = document.getElementById('exportExcel');
+
+        // Armazenamento local dos dados
+        let attendanceList = JSON.parse(localStorage.getItem('weddingAttendance')) || [];
+        let editingEntryId = null;
+
+        // Elementos do modal de edição
+        const editModal = document.getElementById('editModal');
+        const closeEditModal = document.getElementById('closeEditModal');
+        const editForm = document.getElementById('editForm');
+        const editFullName = document.getElementById('editFullName');
+        const editChildren = document.getElementById('editChildren');
+
+        // Sistema de lista de presentes
+        const giftListBtn = document.getElementById('giftListBtn');
+        const giftListPage = document.getElementById('giftListPage');
+        const backToHomeFromGifts = document.getElementById('backToHomeFromGifts');
+        const categoryBtns = document.querySelectorAll('.category-btn');
+        const giftCategorySections = document.querySelectorAll('.gift-category-section');
+        const colorPreference = document.getElementById('colorPreference');
+
+        // Abrir página de lista de presentes
+        giftListBtn.addEventListener('click', function() {
+            showGiftListPage();
+        });
+
+        // Voltar para a página principal da lista de presentes
+        backToHomeFromGifts.addEventListener('click', function() {
+            hideGiftListPage();
+        });
+
+        // Navegação entre categorias
+        categoryBtns.forEach(btn => {
+            btn.addEventListener('click', function() {
+                const category = this.getAttribute('data-category');
+                
+                // Remover classe active de todos os botões
+                categoryBtns.forEach(b => b.classList.remove('active'));
+                
+                // Adicionar classe active ao botão clicado
+                this.classList.add('active');
+                
+                // Esconder todas as seções
+                giftCategorySections.forEach(section => section.classList.remove('active'));
+                
+                // Mostrar seção selecionada
+                document.getElementById(category).classList.add('active');
+                
+                // Mostrar/esconder informação de cores apenas para cozinha
+                if (category === 'cozinha') {
+                    colorPreference.style.display = 'block';
+                } else {
+                    colorPreference.style.display = 'none';
+                }
+            });
+        });
+
+        // Função para mostrar página de lista de presentes
+        function showGiftListPage() {
+            // Esconder conteúdo principal
+            document.querySelector('main').style.display = 'none';
+            document.querySelectorAll('section').forEach(section => {
+                section.style.display = 'none';
+            });
+            
+            // Mostrar página de lista de presentes
+            giftListPage.style.display = 'block';
+        }
+
+        // Função para esconder página de lista de presentes
+        function hideGiftListPage() {
+            // Mostrar conteúdo principal
+            document.querySelector('main').style.display = 'flex';
+            document.querySelectorAll('section').forEach(section => {
+                section.style.display = 'flex';
+            });
+            
+            // Esconder página de lista de presentes
+            giftListPage.style.display = 'none';
+        }
+
+        // Abrir modal
+        confirmPresenceBtn.addEventListener('click', function() {
+            presenceModal.style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+        });
+
+        // Fechar modal
+        closeModal.addEventListener('click', function() {
+            presenceModal.style.display = 'none';
+            document.body.style.overflow = 'auto';
+        });
+
+        // Fechar modal clicando fora
+        presenceModal.addEventListener('click', function(e) {
+            if (e.target === presenceModal) {
+                presenceModal.style.display = 'none';
+                document.body.style.overflow = 'auto';
+            }
+        });
+
+        // Enviar formulário
+        presenceForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(presenceForm);
+            const fullName = formData.get('fullName').trim();
+            const children = formData.get('children').trim();
+            const agreement = formData.get('agreement');
+
+            if (!fullName || !agreement) {
+                alert('Por favor, preencha todos os campos obrigatórios.');
+                return;
+            }
+
+            // Criar entrada para a lista
+            const attendanceEntry = {
+                id: Date.now(),
+                name: fullName,
+                children: children || 'Não',
+                timestamp: new Date().toLocaleString('pt-BR')
+            };
+
+            // Adicionar à lista
+            attendanceList.push(attendanceEntry);
+            
+            // Salvar no localStorage
+            localStorage.setItem('weddingAttendance', JSON.stringify(attendanceList));
+
+            // Fechar modal e mostrar popup
+            presenceModal.style.display = 'none';
+            confirmationPopup.style.display = 'flex';
+            
+            // Limpar formulário
+            presenceForm.reset();
+        });
+
+        // Fechar popup
+        closePopup.addEventListener('click', function() {
+            confirmationPopup.style.display = 'none';
+            document.body.style.overflow = 'auto';
+        });
+
+        // Verificar se a URL é para lista de presença
+        function checkURL() {
+            const path = window.location.pathname;
+            const hash = window.location.hash;
+            
+            if (path.includes('/lista-de-presenca') || hash === '#lista-de-presenca') {
+                showAttendancePage();
+            }
+        }
+
+        // Mostrar página de lista de presença
+        function showAttendancePage() {
+            // Esconder conteúdo principal
+            document.querySelector('main').style.display = 'none';
+            document.querySelectorAll('section').forEach(section => {
+                section.style.display = 'none';
+            });
+            
+            // Mostrar página de lista
+            attendancePage.style.display = 'block';
+            
+            // Atualizar tabela
+            updateAttendanceTable();
+        }
+
+        // Voltar para a página principal
+        backToHome.addEventListener('click', function() {
+            // Mostrar conteúdo principal
+            document.querySelector('main').style.display = 'flex';
+            document.querySelectorAll('section').forEach(section => {
+                section.style.display = 'flex';
+            });
+            
+            // Esconder página de lista
+            attendancePage.style.display = 'none';
+            
+            // Atualizar URL
+            window.history.pushState({}, '', '/');
+        });
+
+        // Função para contar crianças em uma string
+        function countChildren(childrenText) {
+            if (!childrenText || childrenText === 'Não' || childrenText.trim() === '') {
+                return 0;
+            }
+            
+            // Separar por vírgulas, quebras de linha ou pontos
+            const children = childrenText.split(/[,\n.;]/)
+                .map(child => child.trim())
+                .filter(child => child !== '' && child !== 'Não');
+            
+            return children.length;
+        }
+
+        // Atualizar estatísticas
+        function updateStats() {
+            const totalAdults = attendanceList.length;
+            let totalChildren = 0;
+            
+            attendanceList.forEach(entry => {
+                totalChildren += countChildren(entry.children);
+            });
+            
+            const totalGuests = totalAdults + totalChildren;
+            
+            document.getElementById('totalGuestsMain').textContent = totalGuests;
+            document.getElementById('totalAdultsMain').textContent = totalAdults;
+            document.getElementById('totalChildrenMain').textContent = totalChildren;
+        }
+
+        // Função para remover entrada
+        function removeEntry(id) {
+            if (confirm('Tem certeza que deseja remover esta confirmação de presença?')) {
+                attendanceList = attendanceList.filter(entry => entry.id !== id);
+                localStorage.setItem('weddingAttendance', JSON.stringify(attendanceList));
+                updateAttendanceTable();
+                updateStats();
+            }
+        }
+
+        // Função para abrir modal de edição
+        function editEntry(id) {
+            const entry = attendanceList.find(item => item.id === id);
+            if (!entry) return;
+
+            editingEntryId = id;
+            editFullName.value = entry.name;
+            editChildren.value = entry.children === 'Não' ? '' : entry.children;
+            
+            editModal.style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+        }
+
+        // Fechar modal de edição
+        closeEditModal.addEventListener('click', function() {
+            editModal.style.display = 'none';
+            document.body.style.overflow = 'auto';
+            editingEntryId = null;
+        });
+
+        // Fechar modal clicando fora
+        editModal.addEventListener('click', function(e) {
+            if (e.target === editModal) {
+                editModal.style.display = 'none';
+                document.body.style.overflow = 'auto';
+                editingEntryId = null;
+            }
+        });
+
+        // Enviar formulário de edição
+        editForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            if (!editingEntryId) return;
+
+            const newName = editFullName.value.trim();
+            const newChildren = editChildren.value.trim();
+
+            if (!newName) {
+                alert('Por favor, preencha o nome.');
+                return;
+            }
+
+            // Encontrar e atualizar a entrada
+            const entryIndex = attendanceList.findIndex(item => item.id === editingEntryId);
+            if (entryIndex !== -1) {
+                attendanceList[entryIndex].name = newName;
+                attendanceList[entryIndex].children = newChildren || 'Não';
+                
+                // Salvar no localStorage
+                localStorage.setItem('weddingAttendance', JSON.stringify(attendanceList));
+                
+                // Atualizar tabela e estatísticas
+                updateAttendanceTable();
+                updateStats();
+                
+                // Fechar modal
+                editModal.style.display = 'none';
+                document.body.style.overflow = 'auto';
+                editingEntryId = null;
+                
+                // Limpar formulário
+                editForm.reset();
+            }
+        });
+
+        // Atualizar tabela de presenças
+        function updateAttendanceTable() {
+            const tbody = document.getElementById('attendanceTableBody');
+            tbody.innerHTML = '';
+
+            if (attendanceList.length === 0) {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td colspan="4" style="text-align: center; color: #999; font-style: italic;">
+                        Nenhuma confirmação de presença registrada ainda.
+                    </td>
+                `;
+                tbody.appendChild(row);
+                updateStats();
+                return;
+            }
+
+            attendanceList.forEach(entry => {
+                const row = document.createElement('tr');
+                
+                // Processar crianças
+                let childrenDisplay = entry.children;
+                if (entry.children !== 'Não' && entry.children.trim() !== '') {
+                    const childrenCount = countChildren(entry.children);
+                    childrenDisplay = `<span class="child-indicator">${childrenCount} criança(s)</span><br><small>${entry.children}</small>`;
+                }
+                
+                row.innerHTML = `
+                    <td><strong>${entry.name}</strong></td>
+                    <td>${childrenDisplay}</td>
+                    <td>${entry.timestamp}</td>
+                    <td>
+                        <div class="action-buttons">
+                            <button class="edit-btn" onclick="editEntry(${entry.id})">
+                                Editar
+                            </button>
+                            <button class="remove-btn" onclick="removeEntry(${entry.id})">
+                                Remover
+                            </button>
+                        </div>
+                    </td>
+                `;
+                
+                tbody.appendChild(row);
+            });
+            
+            updateStats();
+        }
+
+        // Exportar para Excel
+        exportExcel.addEventListener('click', function() {
+            if (attendanceList.length === 0) {
+                alert('Não há dados para exportar.');
+                return;
+            }
+
+            // Preparar dados para Excel
+            const excelData = [
+                ['Nome', 'Crianças', 'Quantidade de Crianças', 'Data/Hora']
+            ];
+
+            attendanceList.forEach(entry => {
+                const childrenCount = countChildren(entry.children);
+                excelData.push([
+                    entry.name,
+                    entry.children === 'Não' ? 'Não' : entry.children,
+                    childrenCount,
+                    entry.timestamp
+                ]);
+            });
+
+            // Adicionar estatísticas no final
+            const totalChildren = attendanceList.reduce((sum, entry) => sum + countChildren(entry.children), 0);
+            excelData.push([]);
+            excelData.push(['ESTATÍSTICAS']);
+            excelData.push(['Total de Adultos', attendanceList.length]);
+            excelData.push(['Total de Crianças', totalChildren]);
+            excelData.push(['Total de Convidados', attendanceList.length + totalChildren]);
+
+            // Criar workbook e worksheet
+            const wb = XLSX.utils.book_new();
+            const ws = XLSX.utils.aoa_to_sheet(excelData);
+
+            // Configurar largura das colunas
+            const colWidths = [
+                { wch: 30 }, // Nome
+                { wch: 40 }, // Crianças
+                { wch: 20 }, // Quantidade
+                { wch: 20 }  // Data/Hora
+            ];
+            ws['!cols'] = colWidths;
+
+            // Adicionar worksheet ao workbook
+            XLSX.utils.book_append_sheet(wb, ws, "Lista de Presenças");
+
+            // Salvar arquivo
+            XLSX.writeFile(wb, `lista_presenca_casamento_${new Date().toISOString().split('T')[0]}.xlsx`);
+        });
+
+        // Verificar URL ao carregar
+        checkURL();
+
+        // Listener para mudanças na URL
+        window.addEventListener('popstate', checkURL);
+
+        // Permitir acesso direto via hash
+        if (window.location.hash === '#lista-de-presenca') {
+            showAttendancePage();
+        }
+
+        // Expor funções globalmente
+        window.removeEntry = removeEntry;
+        window.editEntry = editEntry;
+        window.countChildren = countChildren;
+        window.updateStats = updateStats;
     </script>
     
     <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
