@@ -6,6 +6,8 @@
     <link rel="stylesheet" href="index.css">
     <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="config.js"></script>
+    <script src="sheets-api-jsonp.js"></script>
     <link rel="icon" href="assets/capa.jpg">
     <meta name="description" content="Um amor que se torna eterno merece ser celebrado com quem amamos. Junte-se a nós!">
     <title>Casamento | Mirela & Thiago</title>
@@ -100,7 +102,7 @@
             <h2 class="form-title">Confirmação de Presença</h2>
             <form id="presenceForm">
                 <div class="form-group">
-                    <label class="form-label" for="fullName">Nome e sobrenome:</label>
+                    <label class="form-label" for="fullName">Nome do(s) adulto(s):</label>
                     <input type="text" id="fullName" name="fullName" class="form-input" required>
                 </div>
                 
@@ -117,6 +119,9 @@
                 </div>
                 
                 <button type="submit" class="form-submit">Confirmar minha presença</button>
+                <div id="loadingMessage" style="display: none; text-align: center; margin-top: 10px; color: #6b8e23; font-size: 14px;">
+                    Confirmando presença...
+                </div>
             </form>
         </div>
     </div>
@@ -274,6 +279,9 @@
                     </div>
                     <div class="gift-item">
                         <span class="gift-name">Cobre-leito</span>
+                    </div>
+                    <div class="gift-item">
+                        <span class="gift-name">Edredom</span>
                     </div>
                     <div class="gift-item">
                         <span class="gift-name">Jogo de toalhas de banho e de rosto</span>
@@ -564,7 +572,7 @@
         });
 
         // Enviar formulário
-        presenceForm.addEventListener('submit', function(e) {
+        presenceForm.addEventListener('submit', async function(e) {
             e.preventDefault();
             
             const formData = new FormData(presenceForm);
@@ -577,26 +585,44 @@
                 return;
             }
 
-            // Criar entrada para a lista
-            const attendanceEntry = {
-                id: Date.now(),
-                name: fullName,
-                children: children || 'Não',
-                timestamp: new Date().toLocaleString('pt-BR')
-            };
+            // Desabilitar botão de submit durante o envio
+            const submitBtn = presenceForm.querySelector('button[type="submit"]');
+            const originalText = submitBtn.textContent;
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Enviando...';
 
-            // Adicionar à lista
-            attendanceList.push(attendanceEntry);
-            
-            // Salvar no localStorage
-            localStorage.setItem('weddingAttendance', JSON.stringify(attendanceList));
+            try {
+                // Criar entrada para a lista
+                const attendanceEntry = {
+                    id: Date.now(),
+                    name: fullName,
+                    children: children || 'Não',
+                    timestamp: new Date().toLocaleString('pt-BR')
+                };
 
-            // Fechar modal e mostrar popup
-            presenceModal.style.display = 'none';
-            confirmationPopup.style.display = 'flex';
-            
-            // Limpar formulário
-            presenceForm.reset();
+                // Enviar para Google Sheets
+                await SheetsAPIJSONP.submitAttendance(attendanceEntry);
+
+                // Fechar modal e mostrar popup de sucesso
+                presenceModal.style.display = 'none';
+                confirmationPopup.style.display = 'flex';
+                
+                // Limpar formulário
+                presenceForm.reset();
+
+                // Recarregar dados da lista de presença
+                if (typeof loadAttendanceData === 'function') {
+                    await loadAttendanceData();
+                }
+
+            } catch (error) {
+                console.error('Erro ao confirmar presença:', error);
+                alert(error.message || 'Erro ao confirmar presença. Tente novamente.');
+            } finally {
+                // Reabilitar botão
+                submitBtn.disabled = false;
+                submitBtn.textContent = originalText;
+            }
         });
 
         // Fechar popup
@@ -616,7 +642,7 @@
         }
 
         // Mostrar página de lista de presença
-        function showAttendancePage() {
+        async function showAttendancePage() {
             // Esconder conteúdo principal
             document.querySelector('main').style.display = 'none';
             document.querySelectorAll('section').forEach(section => {
@@ -626,8 +652,32 @@
             // Mostrar página de lista
             attendancePage.style.display = 'block';
             
-            // Atualizar tabela
-            updateAttendanceTable();
+            // Carregar e atualizar tabela
+            await loadAttendanceData();
+        }
+
+        // Função para carregar dados da planilha
+        async function loadAttendanceData() {
+            try {
+                // Mostrar indicador de carregamento
+                const tbody = document.getElementById('attendanceTableBody');
+                tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; color: #999;">Carregando dados...</td></tr>';
+                
+                // Carregar dados da planilha
+                attendanceList = await SheetsAPIJSONP.loadAttendanceList();
+                
+                // Atualizar tabela e estatísticas
+                updateAttendanceTable();
+                updateStats();
+                
+            } catch (error) {
+                console.error('Erro ao carregar dados:', error);
+                
+                // Fallback para localStorage
+                attendanceList = JSON.parse(localStorage.getItem('weddingAttendance')) || [];
+                updateAttendanceTable();
+                updateStats();
+            }
         }
 
         // Voltar para a página principal
@@ -647,16 +697,7 @@
 
         // Função para contar crianças em uma string
         function countChildren(childrenText) {
-            if (!childrenText || childrenText === 'Não' || childrenText.trim() === '') {
-                return 0;
-            }
-            
-            // Separar por vírgulas, quebras de linha ou pontos
-            const children = childrenText.split(/[,\n.;]/)
-                .map(child => child.trim())
-                .filter(child => child !== '' && child !== 'Não');
-            
-            return children.length;
+            return SheetsAPIJSONP.countChildren(childrenText);
         }
 
         // Atualizar estatísticas
@@ -861,11 +902,32 @@
             showAttendancePage();
         }
 
+        // Carregar dados da planilha ao iniciar a página
+        document.addEventListener('DOMContentLoaded', async function() {
+            try {
+                await loadAttendanceData();
+            } catch (error) {
+                console.error('Erro ao carregar dados iniciais:', error);
+            }
+        });
+
+        // Sincronizar dados a cada 30 segundos
+        setInterval(async function() {
+            try {
+                if (attendancePage.style.display === 'block') {
+                    await loadAttendanceData();
+                }
+            } catch (error) {
+                console.error('Erro na sincronização automática:', error);
+            }
+        }, 30000);
+
         // Expor funções globalmente
         window.removeEntry = removeEntry;
         window.editEntry = editEntry;
         window.countChildren = countChildren;
         window.updateStats = updateStats;
+        window.loadAttendanceData = loadAttendanceData;
     </script>
     
     <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>

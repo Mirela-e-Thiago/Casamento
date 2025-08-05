@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste JSONP - Sem CORS</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; }
+        .success { background-color: #d4edda; color: #155724; }
+        .error { background-color: #f8d7da; color: #721c24; }
+        button { padding: 10px 20px; margin: 5px; cursor: pointer; }
+        pre { background-color: #f8f9fa; padding: 10px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>🧪 Teste JSONP - Solução SEM CORS</h1>
+    
+    <div class="test-section">
+        <h3>1. Teste de Envio via Form (POST)</h3>
+        <button onclick="testFormSubmit()">Enviar Dados via Form</button>
+        <div id="formResult"></div>
+    </div>
+    
+    <div class="test-section">
+        <h3>2. Teste de Leitura via JSONP (GET)</h3>
+        <button onclick="testJSONP()">Carregar Dados via JSONP</button>
+        <div id="jsonpResult"></div>
+    </div>
+    
+    <div class="test-section">
+        <h3>3. Teste da API Completa</h3>
+        <button onclick="testCompleteAPI()">Testar API Completa</button>
+        <div id="completeResult"></div>
+    </div>
+    
+    <div class="test-section">
+        <h3>4. URL da API Configurada</h3>
+        <div id="apiUrl"></div>
+    </div>
+
+    <script src="config.js"></script>
+    <script src="sheets-api-jsonp.js"></script>
+    <script>
+        // Mostrar URL da API
+        document.getElementById('apiUrl').innerHTML = `<pre>${CONFIG.GOOGLE_APPS_SCRIPT_URL}</pre>`;
+
+        function testFormSubmit() {
+            const resultDiv = document.getElementById('formResult');
+            resultDiv.innerHTML = '<p>Enviando dados via form...</p>';
+            
+            try {
+                const testData = {
+                    id: Date.now(),
+                    name: 'Teste JSONP Usuario',
+                    children: 'Maria, 3 anos',
+                    timestamp: new Date().toLocaleString('pt-BR')
+                };
+                
+                SheetsAPIJSONP.submitAttendance(testData).then(() => {
+                    resultDiv.innerHTML = `
+                        <div class="success">
+                            <p>✅ Dados enviados via form!</p>
+                            <p>Uma nova aba deve ter aberto mostrando "OK - Dados salvos com sucesso!"</p>
+                            <p>Verifique sua planilha para confirmar que os dados foram salvos.</p>
+                        </div>
+                    `;
+                }).catch(error => {
+                    resultDiv.innerHTML = `
+                        <div class="error">
+                            <p>❌ Erro ao enviar via form</p>
+                            <p>Erro: ${error.message}</p>
+                        </div>
+                    `;
+                });
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <p>❌ Erro ao criar form</p>
+                        <p>Erro: ${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        function testJSONP() {
+            const resultDiv = document.getElementById('jsonpResult');
+            resultDiv.innerHTML = '<p>Carregando dados via JSONP...</p>';
+            
+            SheetsAPIJSONP.loadAttendanceList().then(data => {
+                resultDiv.innerHTML = `
+                    <div class="success">
+                        <p>✅ Dados carregados via JSONP!</p>
+                        <p>Total de registros: ${data.length}</p>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    </div>
+                `;
+            }).catch(error => {
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <p>❌ Erro ao carregar via JSONP</p>
+                        <p>Erro: ${error.message}</p>
+                    </div>
+                `;
+            });
+        }
+
+        async function testCompleteAPI() {
+            const resultDiv = document.getElementById('completeResult');
+            resultDiv.innerHTML = '<p>Testando API completa...</p>';
+            
+            try {
+                // Teste 1: Enviar dados
+                const testData = {
+                    id: Date.now(),
+                    name: 'Teste Completo',
+                    children: 'Ana, 4 anos; José, 6 anos',
+                    timestamp: new Date().toLocaleString('pt-BR')
+                };
+                
+                await SheetsAPIJSONP.submitAttendance(testData);
+                
+                // Aguardar um pouco para os dados serem processados
+                await new Promise(resolve => setTimeout(resolve, 2000));
+                
+                // Teste 2: Carregar dados
+                const data = await SheetsAPIJSONP.loadAttendanceList();
+                
+                resultDiv.innerHTML = `
+                    <div class="success">
+                        <p>✅ API completa funcionando!</p>
+                        <p>1. Dados enviados com sucesso</p>
+                        <p>2. Dados carregados com sucesso</p>
+                        <p>Total de registros: ${data.length}</p>
+                        <p><strong>🎉 Sua integração está funcionando!</strong></p>
+                    </div>
+                `;
+                
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <p>❌ Erro na API completa</p>
+                        <p>Erro: ${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+    </script>
+</body>
+</html>

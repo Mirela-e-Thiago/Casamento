@@ -6,6 +6,8 @@
     <link rel="stylesheet" href="index.css">
     <link rel="icon" href="assets/capa.jpg">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="config.js"></script>
+    <script src="sheets-api-jsonp.js"></script>
     <title>Lista de Presenças | Casamento Mirela & Thiago</title>
 </head>
 <body style="background-color: #f8f9f7;">
@@ -70,9 +72,24 @@
     </div>
 
     <script>
-        // Carregar dados do localStorage
-        let attendanceList = JSON.parse(localStorage.getItem('weddingAttendance')) || [];
+        // Carregar dados do Google Sheets
+        let attendanceList = [];
         let editingEntryId = null;
+
+        // Função para carregar dados da planilha
+        async function loadAttendanceData() {
+            try {
+                attendanceList = await SheetsAPIJSONP.loadAttendanceList();
+                updateAttendanceTable();
+                updateStats();
+            } catch (error) {
+                console.error('Erro ao carregar dados:', error);
+                // Fallback para localStorage
+                attendanceList = JSON.parse(localStorage.getItem('weddingAttendance')) || [];
+                updateAttendanceTable();
+                updateStats();
+            }
+        }
 
         // Elementos do modal de edição
         const editModal = document.getElementById('editModal');
@@ -83,16 +100,7 @@
 
         // Função para contar crianças em uma string
         function countChildren(childrenText) {
-            if (!childrenText || childrenText === 'Não' || childrenText.trim() === '') {
-                return 0;
-            }
-            
-            // Separar por vírgulas, quebras de linha ou pontos
-            const children = childrenText.split(/[,\n.;]/)
-                .map(child => child.trim())
-                .filter(child => child !== '' && child !== 'Não');
-            
-            return children.length;
+            return SheetsAPIJSONP.countChildren(childrenText);
         }
 
         // Atualizar estatísticas
@@ -283,18 +291,14 @@
         });
 
         // Carregar tabela e estatísticas ao iniciar
-        updateAttendanceTable();
-        updateStats();
+        document.addEventListener('DOMContentLoaded', async function() {
+            await loadAttendanceData();
+        });
 
-        // Atualizar tabela a cada 5 segundos (caso outros usuários adicionem dados)
-        setInterval(function() {
-            const newData = JSON.parse(localStorage.getItem('weddingAttendance')) || [];
-            if (JSON.stringify(newData) !== JSON.stringify(attendanceList)) {
-                attendanceList = newData;
-                updateAttendanceTable();
-                updateStats();
-            }
-        }, 5000);
+        // Atualizar dados a cada 30 segundos
+        setInterval(async function() {
+            await loadAttendanceData();
+        }, 30000);
 
         // Expor função removeEntry globalmente
         window.removeEntry = removeEntry;

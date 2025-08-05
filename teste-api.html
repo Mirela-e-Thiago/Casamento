@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste da API Google Sheets</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; }
+        .success { background-color: #d4edda; color: #155724; }
+        .error { background-color: #f8d7da; color: #721c24; }
+        button { padding: 10px 20px; margin: 5px; cursor: pointer; }
+        pre { background-color: #f8f9fa; padding: 10px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>🧪 Teste da Integração Google Sheets</h1>
+    
+    <div class="test-section">
+        <h3>1. Teste de Conexão com a API</h3>
+        <button onclick="testConnection()">Testar Conexão</button>
+        <div id="connectionResult"></div>
+    </div>
+    
+    <div class="test-section">
+        <h3>2. Teste de Envio de Dados</h3>
+        <button onclick="testSubmitData()">Enviar Dados de Teste</button>
+        <div id="submitResult"></div>
+    </div>
+    
+    <div class="test-section">
+        <h3>3. Teste de Leitura de Dados</h3>
+        <button onclick="testLoadData()">Carregar Dados</button>
+        <div id="loadResult"></div>
+    </div>
+    
+    <div class="test-section">
+        <h3>4. URL da API Configurada</h3>
+        <div id="apiUrl"></div>
+    </div>
+
+    <script src="config.js"></script>
+    <script src="sheets-api.js"></script>
+    <script>
+        // Mostrar URL da API
+        document.getElementById('apiUrl').innerHTML = `<pre>${CONFIG.GOOGLE_APPS_SCRIPT_URL}</pre>`;
+
+        async function testConnection() {
+            const resultDiv = document.getElementById('connectionResult');
+            resultDiv.innerHTML = '<p>Testando conexão...</p>';
+            
+            try {
+                const response = await fetch(CONFIG.GOOGLE_APPS_SCRIPT_URL, {
+                    method: 'GET',
+                    mode: 'cors'
+                });
+                
+                if (response.ok) {
+                    resultDiv.innerHTML = `
+                        <div class="success">
+                            <p>✅ Conexão bem-sucedida!</p>
+                            <p>Status: ${response.status}</p>
+                            <p>URL: OK</p>
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="error">
+                            <p>❌ Erro na conexão</p>
+                            <p>Status: ${response.status}</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <p>❌ Erro de conexão</p>
+                        <p>Erro: ${error.message}</p>
+                        <p><strong>Possíveis causas:</strong></p>
+                        <ul>
+                            <li>URL do Google Apps Script incorreta</li>
+                            <li>Script não está implantado como aplicativo web</li>
+                            <li>Permissões do script incorretas</li>
+                            <li>Problema de CORS</li>
+                        </ul>
+                    </div>
+                `;
+            }
+        }
+
+        async function testSubmitData() {
+            const resultDiv = document.getElementById('submitResult');
+            resultDiv.innerHTML = '<p>Enviando dados de teste...</p>';
+            
+            try {
+                const testData = {
+                    id: Date.now(),
+                    name: 'Teste Usuario',
+                    children: 'João, 5 anos',
+                    timestamp: new Date().toLocaleString('pt-BR')
+                };
+                
+                const result = await SheetsAPI.submitAttendance(testData);
+                
+                resultDiv.innerHTML = `
+                    <div class="success">
+                        <p>✅ Dados enviados com sucesso!</p>
+                        <pre>${JSON.stringify(result, null, 2)}</pre>
+                    </div>
+                `;
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <p>❌ Erro ao enviar dados</p>
+                        <p>Erro: ${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        async function testLoadData() {
+            const resultDiv = document.getElementById('loadResult');
+            resultDiv.innerHTML = '<p>Carregando dados...</p>';
+            
+            try {
+                const data = await SheetsAPI.loadAttendanceList();
+                
+                resultDiv.innerHTML = `
+                    <div class="success">
+                        <p>✅ Dados carregados com sucesso!</p>
+                        <p>Total de registros: ${data.length}</p>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    </div>
+                `;
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <p>❌ Erro ao carregar dados</p>
+                        <p>Erro: ${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+    </script>
+</body>
+</html>
