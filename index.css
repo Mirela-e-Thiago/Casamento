@@ -220,6 +220,7 @@ body {
     & span {
         font-family: "Lato", sans-serif;
         color: #fff;
+        font-weight: 300;
         font-size: 20px;
         margin-top: -40px;
     }
