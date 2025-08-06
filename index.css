@@ -198,8 +198,9 @@ body {
     gap: 20px;
 
     & button {
-        color: #fff;
-        border: 1px solid #fff;
+        color: #7f8967;
+        background: #fff;
+        border: 1px solid transparent;
         padding: 10px 20px;
         background-color: transparent;
         border-radius: 50px;
@@ -210,8 +211,9 @@ body {
         transition: all .2s ease-in-out;
 
         &:hover {
-            background-color: #fff;
-            color: #7f8967;
+            background-color: transparent;
+            color: #fff;
+            border: 1px solid #fff;
         }
     }
 
